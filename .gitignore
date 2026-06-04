@@ -1,0 +1,24 @@
+.venv/
+.vscode/
+logs/
+uv.lock
+# Keep actual config with keys out, allow template
+config/config2.yaml
+# Local-only helper scripts (not needed on server)
+autodl_connect.py
+connect_autodl.sh
+proxy_tunnel.py
+ssh_askpass.sh
+ssh_tunnel.py
+upload_project.py
+# Claude Code
+.claude/
+memory/
+# Python cache
+__pycache__/
+*.pyc
+# macOS
+.DS_Store
+# Empty submodule dirs (clone separately on server)
+MermaidFlow_Linter/
+weave_version_for_mermaidflow/

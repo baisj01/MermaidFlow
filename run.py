@@ -44,6 +44,14 @@ class _NoOpWeaveModule:
     class SavedView:
         def __init__(self, *args, **kwargs):
             pass
+        def filter_op(self, *args, **kwargs):
+            return self
+        def sort_by(self, *args, **kwargs):
+            return self
+        def __iter__(self):
+            return iter([])
+        def __getattr__(self, name):
+            return lambda *args, **kwargs: self
 
     # Catch-all for any other weave attribute access
     def __getattr__(self, name):

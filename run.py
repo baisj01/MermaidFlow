@@ -5,13 +5,57 @@
 
 import argparse
 from typing import Dict, List
+import sys
+import logging
+import time
+
+# ============================================================
+# Weave no-op mock: disable Weave tracking entirely for Ollama deployment.
+# Must run BEFORE any scripts.* imports that use @weave.op() decorators.
+# ============================================================
+class _NoOpClient:
+    """Dummy weave client that silently accepts all attribute access."""
+    def __getattr__(self, name):
+        return lambda *args, **kwargs: None
+
+class _NoOpWeaveModule:
+    """Drop-in no-op replacement for the 'weave' module."""
+    __name__ = "weave"
+
+    @staticmethod
+    def init(*args, **kwargs):
+        logging.info("Weave disabled — running without experiment tracking.")
+        return _NoOpClient()
+
+    @staticmethod
+    def op(*args, **kwargs):
+        """No-op decorator: returns the function unchanged."""
+        if len(args) == 1 and callable(args[0]):
+            return args[0]
+        def decorator(fn):
+            return fn
+        return decorator
+
+    @staticmethod
+    def attributes(*args, **kwargs):
+        import contextlib
+        return contextlib.nullcontext()
+
+    class SavedView:
+        def __init__(self, *args, **kwargs):
+            pass
+
+    # Catch-all for any other weave attribute access
+    def __getattr__(self, name):
+        return lambda *args, **kwargs: _NoOpClient()
+
+sys.modules["weave"] = _NoOpWeaveModule()
+# ============================================================
 
 from data.download_data import download
 from scripts.optimizer import Optimizer
 from scripts.async_llm import LLMsConfig
-import weave
-import logging
-import time
+import weave  # gets our no-op module from sys.modules
 
 class ExperimentConfig:
     def __init__(self, dataset: str, question_type: str, operators: List[str]):
@@ -122,11 +166,7 @@ if __name__ == "__main__":
 
     download(["datasets", "initial_rounds"], force_download=args.if_force_download)
 
-    try:
-        client = weave.init(f"{config.dataset}")
-    except Exception as e:
-        logging.warning(f"Weave init failed (non-fatal): {e}")
-        client = None
+    client = weave.init(f"{config.dataset}")
 
     optimizer = Optimizer(
         dataset=config.dataset,

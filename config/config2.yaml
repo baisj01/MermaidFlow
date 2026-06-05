@@ -1,5 +1,5 @@
 models:
- "qwen2.5:14b":
+ "mistral-small":
    api_type: "openai"
    base_url: "http://localhost:11434/v1"
    api_key: "ollama"
@@ -7,6 +7,6 @@ models:
 
 llm:
   api_type: "openai"
-  model: "qwen2.5:14b"
+  model: "mistral-small"
   base_url: "http://localhost:11434/v1"
   api_key: "ollama"

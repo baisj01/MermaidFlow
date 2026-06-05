@@ -13,6 +13,20 @@ import weave
 import asyncio
 from scripts.evolution_prompt import PROMPT_FEW_SHOT
 import logging
+import re
+
+
+def _strip_markdown_fence(text: str) -> str:
+    """Strip markdown code fences (```mermaid ... ```) from LLM output."""
+    if not text:
+        return text
+    text = text.strip()
+    # Pattern: ```mermaid ... ``` or ``` ... ```
+    pattern = r"^```(?:mermaid)?\s*\n(.*?)\n```\s*$"
+    m = re.match(pattern, text, re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    return text
 import time
 from scripts.logs import logger
 
@@ -617,6 +631,9 @@ async def get_response(
             return new_graph, new_prompt, new_modification
         
         new_graph, new_prompt, new_modification = get_graph(graph_decision, graph_candidates)
+
+        # Strip markdown code fences if present (Ollama models often wrap output)
+        new_graph = _strip_markdown_fence(new_graph)
 
         if mermaid_checker:
             mermaid_path = mermaid_checker.transfer_mmd_code_string_to_temp_file(new_graph)

@@ -271,6 +271,9 @@ async def get_reponse(
         new_graph, new_prompt, new_modification = get_graph(
             graph_decision, graph_candidates
         )
+        # Strip markdown code fences if present
+        from scripts.mermaid_workflow import _strip_markdown_fence
+        new_graph = _strip_markdown_fence(new_graph)
         if mermaid_checker:
             mermaid_path = mermaid_checker.transfer_mmd_code_string_to_temp_file(new_graph)
             is_hard_pass, hard_check_info = mermaid_checker.hard_check(mermaid_path)

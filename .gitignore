@@ -19,6 +19,3 @@ __pycache__/
 *.pyc
 # macOS
 .DS_Store
-# Empty submodule dirs (clone separately on server)
-MermaidFlow_Linter/
-weave_version_for_mermaidflow/

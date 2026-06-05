@@ -1,0 +1,12 @@
+models:
+ "qwen2.5:14b":
+   api_type: "openai"
+   base_url: "http://localhost:11434/v1"
+   api_key: "ollama"
+   temperature: 0
+
+llm:
+  api_type: "openai"
+  model: "qwen2.5:14b"
+  base_url: "http://localhost:11434/v1"
+  api_key: "ollama"

@@ -122,7 +122,11 @@ if __name__ == "__main__":
 
     download(["datasets", "initial_rounds"], force_download=args.if_force_download)
 
-    client = weave.init(f"{config.dataset}")
+    try:
+        client = weave.init(f"{config.dataset}")
+    except Exception as e:
+        logging.warning(f"Weave init failed (non-fatal): {e}")
+        client = None
 
     optimizer = Optimizer(
         dataset=config.dataset,

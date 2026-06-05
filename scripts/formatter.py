@@ -98,15 +98,20 @@ class XmlFormatter(BaseFormatter):
         try:
             pattern = r"<(\w+)>(.*?)</\1>"
             matches = re.findall(pattern, response, re.DOTALL)
-            
+
             found_fields = {match[0]: match[1].strip() for match in matches}
-            
+
+            # Fill in missing fields with default values from the model
             for field_name in self._get_field_names():
                 field = self.model.model_fields[field_name]
                 is_required = field.default is None and field.default_factory is None
-                
+
                 if is_required and (field_name not in found_fields or not found_fields[field_name]):
                     raise FormatError(f"Field '{field_name}' is missing or empty.")
+
+                # Add missing optional fields with empty string default for Ollama compatibility
+                if field_name not in found_fields:
+                    found_fields[field_name] = ""
 
             return True, found_fields
         except Exception:

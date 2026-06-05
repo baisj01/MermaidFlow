@@ -205,3 +205,57 @@ git push origin main
 - [ ] 输出目录 `workspace/` 有优化结果生成
 - [ ] `git remote -v` 指向用户 GitHub 仓库
 - [ ] `git push` 能成功将更改推送到 GitHub
+
+---
+
+## 实际部署记录（2026-06-05）
+
+### 环境差异
+
+| 项目 | CLAUDE.md 预期 | 实际情况 |
+|------|---------------|---------|
+| CUDA | 11.8 | Driver 13.0, 兼容 CUDA v12/v13 |
+| Python | 3.10 | 3.10.8 via miniconda `/root/miniconda3` |
+| 网络 | 需要 Clash 代理 | AutoDL 直连可用（PyPI/npm 正常，GitHub 偶尔不稳定） |
+| Ollama 安装 | 一键脚本 | 脚本不完整，需手动补齐 llama-server + CUDA 后端库 |
+
+### 部署结果
+
+| 步骤 | 结果 |
+|------|------|
+| Git 初始化 + 推送 | ✅ |
+| SSH 免密登录 | ✅ |
+| 环境验证（RTX 4090 24GB） | ✅ |
+| uv / Node.js / mmdc | ✅ |
+| Python 依赖（uv sync） | ✅ |
+| Ollama + CUDA v13 GPU 加速 | ✅ 41/41 layers on GPU, 77 tok/s |
+| 模型筛选 | Qwen3:14b ❌(thinking mode), Qwen2.5:14b ❌(XML格式差), **Mistral Small 24B** ✅ |
+| Weave 追踪禁用 | ✅ no-op mock |
+| Mermaid 图表生成 | ✅ "All validations passed successfully" |
+| GSM8K 评估 | ✅ Round 2 跑至 100/264, 成功率 95% |
+
+### 修改文件说明
+
+| 文件 | 改动 | 原因 |
+|------|------|------|
+| `run.py` | Weave no-op mock 替换真实 weave 导入 | 无 Weave 账号时避免 `@weave.op()` 崩溃 |
+| `scripts/formatter.py` | `validate_response()` 为缺失字段填默认值 | Ollama 模型 XML 输出不如 GPT-4o 完整 |
+| `scripts/mermaid_workflow.py` | 添加 `_strip_markdown_fence()` 函数 | Mistral 习惯给 mermaid 代码加 ``` 围栏 |
+| `scripts/evolution_related.py` | 调用 `_strip_markdown_fence()` 剥离围栏 | 同上 |
+| `scripts/optimizer.py` | `max_retries` 从 1 改为 3 | 提高 LLM 格式错误恢复率 |
+| `config/config2.yaml` | 改为 `mistral-small` + Ollama 端点 | 适配本地模型 |
+| `workspace/*/template/operator.py` | `gpt-4o-mini` → `mistral-small` | 消除硬编码模型名 |
+| `.gitignore` | 移除 submodule 目录排除 | 修复 submodule 无法 git add |
+
+### 快速启动命令
+
+```bash
+ssh -p 20892 root@connect.nmb1.seetacloud.com
+cd /root/autodl-tmp/MermaidFlow
+source /root/miniconda3/etc/profile.d/conda.sh && conda activate mermaidflow
+nohup .venv/bin/python -u run.py --dataset GSM8K \
+  --opt_model_name mistral-small --exec_model_name mistral-small \
+  --max_rounds 20 --validation_rounds 2 \
+  > mermaidflow.log 2>&1 &
+tail -f mermaidflow.log
+```

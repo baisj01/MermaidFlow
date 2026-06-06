@@ -96,7 +96,7 @@ models_config = LLMsConfig.default()
 
 global _role_expansion_llm
 
-role_expansion_llm_config = models_config.get("gpt-4o-mini")
+role_expansion_llm_config = models_config.get("mistral-small")
 role_expansion_llm_config.temperature = 0.7
 
 _role_expansion_llm = RoleExpansionLLM(llm=AsyncLLM(role_expansion_llm_config))

@@ -1,0 +1,12 @@
+{
+    "1": {
+        "score": 0.865530303030303,
+        "success": {
+            "2": {
+                "modification": "Add a new node \"P\" using the Programmer operator to generate solutions by executing Python code.",
+                "score": 0.9507575757575758
+            }
+        },
+        "failure": {}
+    }
+}

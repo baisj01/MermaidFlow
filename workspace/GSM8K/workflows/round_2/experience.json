@@ -1,0 +1,7 @@
+{
+    "father node": 1,
+    "modification": "Add a new node \"P\" using the Programmer operator to generate solutions by executing Python code.",
+    "before": 0.865530303030303,
+    "after": 0.9507575757575758,
+    "succeed": true
+}
